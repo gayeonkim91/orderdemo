@@ -1,0 +1,41 @@
+services:
+  app:
+    image: gradle:8.14.3-jdk21
+    container_name: orderdemo-app
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+      - gradle-cache:/home/gradle/.gradle
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    command: sleep infinity
+
+  db:
+    image: mysql:8.4.8-oraclelinux9
+    container_name: orderdemo-mysql
+    environment:
+      MYSQL_DATABASE: orderdemo
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app1234
+      MYSQL_ROOT_PASSWORD: root1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  gradle-cache:
+  mysql-data:
