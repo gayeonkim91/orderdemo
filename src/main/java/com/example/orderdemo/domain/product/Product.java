@@ -2,12 +2,22 @@ package com.example.orderdemo.domain.product;
 
 import com.example.orderdemo.common.InvalidProductException;
 import com.example.orderdemo.common.OutOfStockException;
+import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "products")
 public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private long price;
     private int quantity;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public static Product create(String name, long price, int quantity) {
         return new Product(name, price, quantity);

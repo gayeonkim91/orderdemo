@@ -2,14 +2,27 @@ package com.example.orderdemo.domain.order;
 
 import com.example.orderdemo.common.InvalidOrderException;
 import com.example.orderdemo.common.InvalidProductException;
+import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "order_items")
 public class OrderItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
     private Order order;
     private Long productId;
     private String productName;
     private long orderUnitPrice;
     private int quantity;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public static OrderItem of(Long productId, String productName, long orderUnitPrice, int quantity) {
         return new OrderItem(productId, productName, orderUnitPrice, quantity);
