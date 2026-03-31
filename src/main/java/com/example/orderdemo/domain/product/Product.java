@@ -1,12 +1,16 @@
 package com.example.orderdemo.domain.product;
 
-import com.example.orderdemo.common.InvalidProductException;
-import com.example.orderdemo.common.OutOfStockException;
+import com.example.orderdemo.common.exception.product.InvalidProductException;
+import com.example.orderdemo.common.exception.product.OutOfStockException;
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "products")
 public class Product {
     @Id
@@ -16,7 +20,10 @@ public class Product {
     private long price;
     private int quantity;
 
+    @CreatedDate
     private LocalDateTime createdAt;
+
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     public static Product create(String name, long price, int quantity) {
