@@ -1,16 +1,14 @@
-package com.example.orderdemo.application;
+package com.example.orderdemo.application.order;
 
 import com.example.orderdemo.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
-public class OrderQueryService {
+@Transactional
+public class OrderCreateService {
     private final OrderRepository orderRepository;
-    public OrderQueryService(OrderRepository orderRepository) {
+    public OrderCreateService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
-
-
 }
