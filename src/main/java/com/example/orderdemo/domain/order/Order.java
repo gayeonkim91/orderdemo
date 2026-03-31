@@ -1,5 +1,7 @@
 package com.example.orderdemo.domain.order;
 
+import com.example.orderdemo.common.InvalidOrderException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +37,8 @@ public class Order {
         return Collections.unmodifiableList(items);
     }
 
+    protected Order() {}
+
     private Order(String orderNumber, List<OrderItem> items) {
         validateOrderNumber(orderNumber);
         validateItems(items);
@@ -47,11 +51,16 @@ public class Order {
     }
 
     private void validateOrderNumber(String orderNumber) {
-
+        if (orderNumber == null || orderNumber.isBlank()) {
+            throw new InvalidOrderException();
+        }
+        // todo 중복검사?
     }
 
     private void validateItems(List<OrderItem> items) {
-
+        if (items.isEmpty()) {
+            throw new InvalidOrderException();
+        }
     }
 
     private void addItem(OrderItem item) {

@@ -1,5 +1,8 @@
 package com.example.orderdemo.domain.order;
 
+import com.example.orderdemo.common.InvalidOrderException;
+import com.example.orderdemo.common.InvalidProductException;
+
 public class OrderItem {
     private Long id;
     private Order order;
@@ -8,13 +11,8 @@ public class OrderItem {
     private long orderUnitPrice;
     private int quantity;
 
-    public static OrderItem of(Long productId, String productName, long orderPrice, int quantity) {
-        OrderItem orderItem = new OrderItem();
-        orderItem.productId = productId;
-        orderItem.productName = productName;
-        orderItem.orderUnitPrice = orderPrice;
-        orderItem.quantity = quantity;
-        return orderItem;
+    public static OrderItem of(Long productId, String productName, long orderUnitPrice, int quantity) {
+        return new OrderItem(productId, productName, orderUnitPrice, quantity);
     }
 
     public Long getId() {
@@ -43,5 +41,43 @@ public class OrderItem {
 
     public long lineAmount() {
         return orderUnitPrice * quantity;
+    }
+
+    protected OrderItem() {}
+
+    private OrderItem(Long productId, String productName, long orderUnitPrice, int quantity) {
+        validateProductId(productId);
+        validateProductName(productName);
+        validateOrderUnitPrice(orderUnitPrice);
+        validateQuantity(quantity);
+
+        this.productId = productId;
+        this.productName = productName;
+        this.orderUnitPrice = orderUnitPrice;
+        this.quantity = quantity;
+    }
+
+    private void validateProductId(Long productId) {
+        if (productId == null || productId < 0) {
+            throw new InvalidProductException();
+        }
+    }
+
+    private void validateProductName(String productName) {
+        if (productName == null || productName.isBlank()) {
+            throw new InvalidProductException();
+        }
+    }
+
+    private void validateOrderUnitPrice(long orderUnitPrice) {
+        if (orderUnitPrice < 0) {
+            throw new InvalidOrderException();
+        }
+    }
+
+    private void validateQuantity(int quantity) {
+        if (quantity < 0) {
+            throw new InvalidOrderException();
+        }
     }
 }
