@@ -1,6 +1,5 @@
 package com.example.orderdemo.domain.product;
 
-import com.example.orderdemo.common.exception.product.InvalidProductException;
 import com.example.orderdemo.common.exception.product.OutOfStockException;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -31,11 +30,8 @@ public class Product {
     }
 
     public void decreaseQuantity(int decreaseQuantity) {
-        if (decreaseQuantity < 0) {
-            throw new InvalidProductException();
-        }
         if (decreaseQuantity > quantity) {
-            throw new OutOfStockException();
+            throw new OutOfStockException(this.id);
         }
         this.quantity -= decreaseQuantity;
     }
@@ -59,32 +55,8 @@ public class Product {
     protected Product() {}
 
     private Product(String name, long price, int quantity) {
-        validateName(name);
-        validatePrice(price);
-        validateQuantity(quantity);
-
         this.name = name;
         this.price = price;
         this.quantity = quantity;
     }
-
-    private void validateName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new InvalidProductException();
-        }
-        // todo 길이
-    }
-
-    private void validatePrice(long price) {
-        if (price < 0) {
-            throw new InvalidProductException();
-        }
-    }
-
-    private void validateQuantity(int quantity) {
-        if (quantity < 0) {
-            throw new InvalidProductException();
-        }
-    }
-
 }

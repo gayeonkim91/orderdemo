@@ -25,7 +25,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderCreateResponse> createOrder(@RequestBody @Valid CreateOrderRequest request) {
-        OrderCreateResult result = orderCreateService.createOrder(request.toCommand());
+        OrderCreateResult result = orderCreateService.create(request.toCommand());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(OrderCreateResponse.from(result));
     }

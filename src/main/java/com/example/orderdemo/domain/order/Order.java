@@ -74,13 +74,13 @@ public class Order {
 
     private void validateOrderNumber(String orderNumber) {
         if (orderNumber == null || orderNumber.isBlank()) {
-            throw new InvalidOrderException();
+            throw new InvalidOrderException("주문번호는 비어 있을 수 없습니다.");
         }
     }
 
     private void validateItems(List<OrderItem> items) {
         if (items.isEmpty()) {
-            throw new InvalidOrderException();
+            throw new InvalidOrderException("주문 항목은 비어 있을 수 없습니다.");
         }
     }
 

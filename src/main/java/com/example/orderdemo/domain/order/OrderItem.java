@@ -1,7 +1,6 @@
 package com.example.orderdemo.domain.order;
 
 import com.example.orderdemo.common.exception.order.InvalidOrderException;
-import com.example.orderdemo.common.exception.product.InvalidProductException;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -66,9 +65,6 @@ public class OrderItem {
     protected OrderItem() {}
 
     private OrderItem(Long productId, String productName, long orderUnitPrice, int quantity) {
-        validateProductId(productId);
-        validateProductName(productName);
-        validateOrderUnitPrice(orderUnitPrice);
         validateQuantity(quantity);
 
         this.productId = productId;
@@ -77,27 +73,9 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    private void validateProductId(Long productId) {
-        if (productId == null || productId < 0) {
-            throw new InvalidProductException();
-        }
-    }
-
-    private void validateProductName(String productName) {
-        if (productName == null || productName.isBlank()) {
-            throw new InvalidProductException();
-        }
-    }
-
-    private void validateOrderUnitPrice(long orderUnitPrice) {
-        if (orderUnitPrice < 0) {
-            throw new InvalidOrderException();
-        }
-    }
-
     private void validateQuantity(int quantity) {
-        if (quantity < 0) {
-            throw new InvalidOrderException();
+        if (quantity <= 0) {
+            throw new InvalidOrderException("주문 수량은 1 이상이어야 합니다.");
         }
     }
 }
