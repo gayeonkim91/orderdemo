@@ -5,7 +5,7 @@ import com.example.orderdemo.domain.order.OrderItem;
 public record OrderItemDetailResult(
     Long productId,
     String productName,
-    long totalAmount,
+    long orderUnitPrice,
     int quantity,
     long lineAmount
 ) {
