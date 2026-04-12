@@ -30,7 +30,7 @@ public class OrderController {
                 .body(OrderCreateResponse.from(result));
     }
 
-    @PostMapping("/{orderId}")
+    @GetMapping("/{orderId}")
     public ResponseEntity<OrderDetailResponse> getOrder(@PathVariable Long orderId) {
         OrderDetailResult result = orderQueryService.getOrder(orderId);
         return ResponseEntity.ok(OrderDetailResponse.from(result));

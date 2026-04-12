@@ -13,7 +13,7 @@ public record OrderItemDetailResult(
         return new OrderItemDetailResult(
                 orderItem.getProductId(),
                 orderItem.getProductName(),
-                orderItem.lineAmount(),
+                orderItem.getOrderUnitPrice(),
                 orderItem.getQuantity(),
                 orderItem.lineAmount()
         );

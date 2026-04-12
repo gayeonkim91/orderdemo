@@ -64,7 +64,7 @@ public class OrderCreateService {
 
     private void validateProductsFound(List<Long> productIds, List<Product> foundProducts) {
         if(productIds.size() != foundProducts.size()) {
-            Set<Long> foundProductIds = new HashSet<>(productIds);
+            Set<Long> foundProductIds = foundProducts.stream().map(Product::getId).collect(Collectors.toSet());
             throw new ProductNotFoundException(productIds.stream()
                     .filter(id -> !foundProductIds.contains(id)).toList());
         }
