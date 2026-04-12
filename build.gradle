@@ -1,3 +1,7 @@
+import org.gradle.api.tasks.testing.TestDescriptor
+import org.gradle.api.tasks.testing.TestListener
+import org.gradle.api.tasks.testing.TestResult
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.12'
@@ -30,4 +34,28 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat 'short'
+    }
+
+    addTestListener(new TestListener() {
+        @Override
+        void beforeSuite(TestDescriptor suite) {}
+
+        @Override
+        void afterSuite(TestDescriptor suite, TestResult result) {
+            if (suite.parent == null) {
+                println ""
+                println "Test result: ${result.resultType}"
+                println "Total: ${result.testCount}, Passed: ${result.successfulTestCount}, Failed: ${result.failedTestCount}, Skipped: ${result.skippedTestCount}"
+            }
+        }
+
+        @Override
+        void beforeTest(TestDescriptor testDescriptor) {}
+
+        @Override
+        void afterTest(TestDescriptor testDescriptor, TestResult result) {}
+    })
 }
