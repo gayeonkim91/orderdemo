@@ -4,6 +4,7 @@ import com.example.orderdemo.application.order.command.CreateOrderCommand;
 import com.example.orderdemo.application.order.command.CreateOrderLineCommand;
 import com.example.orderdemo.application.order.result.OrderCreateResult;
 import com.example.orderdemo.common.exception.order.InvalidOrderException;
+import com.example.orderdemo.common.exception.product.OutOfStockException;
 import com.example.orderdemo.common.exception.product.ProductNotFoundException;
 import com.example.orderdemo.domain.order.Order;
 import com.example.orderdemo.domain.product.Product;
@@ -91,5 +92,20 @@ class OrderCreateServiceTest {
 
         // then
         assertEquals("상품을 찾을 수 없습니다. productIds = " + List.of(productId), e.getMessage());
+    }
+
+    @Test
+    void create_재고부족() {
+        int initialQuantity = 1;
+        Product product = productRepository.save(Product.create("상품1", 1000, initialQuantity));
+        CreateOrderLineCommand orderLine = new CreateOrderLineCommand(product.getId(), 3);
+        List<CreateOrderLineCommand> createOrderLineCommands = List.of(orderLine);
+        CreateOrderCommand createOrderCommand = new CreateOrderCommand(createOrderLineCommands);
+
+        // when, then
+        Throwable e = assertThrows(OutOfStockException.class,() -> orderCreateService.create(createOrderCommand));
+
+        // then
+        assertEquals("재고가 부족합니다. productId = " + product.getId(), e.getMessage());
     }
 }

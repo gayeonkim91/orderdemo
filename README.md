@@ -62,17 +62,17 @@ src/main/java/com/example/orderdemo
 현재 코드 기준 역할은 아래와 같다.
 
 - `api/order`
-  [OrderController.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/api/order/OrderController.java:15) 에서 `POST /api/orders`, `GET /api/orders/{orderId}`를 처리한다.
+  [OrderController.java](src/main/java/com/example/orderdemo/api/order/OrderController.java) 에서 `POST /api/orders`, `GET /api/orders/{orderId}`를 처리한다.
   요청 DTO는 `CreateOrderRequest`, `CreateOrderItemRequest`, 응답 DTO는 `OrderCreateResponse`, `OrderDetailResponse`, `OrderItemResponse`로 분리했다.
 - `api/error`
-  [GlobalExceptionHandler.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/api/error/GlobalExceptionHandler.java:13) 가 `BusinessException`, validation 예외, 기타 예외를 API 응답으로 변환한다.
+  [GlobalExceptionHandler.java](src/main/java/com/example/orderdemo/api/error/GlobalExceptionHandler.java) 가 `BusinessException`, validation 예외, 기타 예외를 API 응답으로 변환한다.
 - `application/order`
-  [OrderCreateService.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/application/order/OrderCreateService.java:21) 가 주문 생성 흐름을 처리하고, [OrderQueryService.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/application/order/OrderQueryService.java:10) 가 주문 조회를 처리한다.
-  주문번호 생성은 [UlidOrderNumberGenerator.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/application/order/UlidOrderNumberGenerator.java:6) 가 담당한다.
+  [OrderCreateService.java](src/main/java/com/example/orderdemo/application/order/OrderCreateService.java) 가 주문 생성 흐름을 처리하고, [OrderQueryService.java](src/main/java/com/example/orderdemo/application/order/OrderQueryService.java) 가 주문 조회를 처리한다.
+  주문번호 생성은 [UlidOrderNumberGenerator.java](src/main/java/com/example/orderdemo/application/order/UlidOrderNumberGenerator.java) 가 담당한다.
 - `domain/order`
-  [Order.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/domain/order/Order.java:14), [OrderItem.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/domain/order/OrderItem.java:11), [OrderStatus.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/domain/order/OrderStatus.java:3) 가 주문 상태와 주문 항목을 표현한다.
+  [Order.java](src/main/java/com/example/orderdemo/domain/order/Order.java), [OrderItem.java](src/main/java/com/example/orderdemo/domain/order/OrderItem.java), [OrderStatus.java](src/main/java/com/example/orderdemo/domain/order/OrderStatus.java) 가 주문 상태와 주문 항목을 표현한다.
 - `domain/product`
-  [Product.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/main/java/com/example/orderdemo/domain/product/Product.java:11) 에 재고 차감 로직이 있다.
+  [Product.java](src/main/java/com/example/orderdemo/domain/product/Product.java) 에 재고 차감 로직이 있다.
 - `repository`
   `OrderRepository`, `ProductRepository`가 JPA 접근을 담당한다.
 - `common`
@@ -194,12 +194,12 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 
 현재 테스트 파일은 아래와 같다.
 
-- [ProductTest.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/test/java/com/example/orderdemo/domain/product/ProductTest.java:1)
-- [OrderTest.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/test/java/com/example/orderdemo/domain/order/OrderTest.java:1)
-- [OrderItemTest.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/test/java/com/example/orderdemo/domain/order/OrderItemTest.java:1)
-- [OrderControllerTest.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/test/java/com/example/orderdemo/api/order/OrderControllerTest.java:1)
-- [OrderCreateServiceTest.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/test/java/com/example/orderdemo/application/order/OrderCreateServiceTest.java:1)
-- [OrderdemoApplicationTests.java](/Users/gayeonkim/Documents/Projects/orderdemo/src/test/java/com/example/orderdemo/OrderdemoApplicationTests.java:1)
+- [ProductTest.java](src/test/java/com/example/orderdemo/domain/product/ProductTest.java)
+- [OrderTest.java](src/test/java/com/example/orderdemo/domain/order/OrderTest.java)
+- [OrderItemTest.java](src/test/java/com/example/orderdemo/domain/order/OrderItemTest.java)
+- [OrderControllerTest.java](src/test/java/com/example/orderdemo/api/order/OrderControllerTest.java)
+- [OrderCreateServiceTest.java](src/test/java/com/example/orderdemo/application/order/OrderCreateServiceTest.java)
+- [OrderdemoApplicationTests.java](src/test/java/com/example/orderdemo/OrderdemoApplicationTests.java)
 
 역할은 아래와 같다.
 
