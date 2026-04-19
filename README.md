@@ -26,6 +26,8 @@
 - 결제/배송 처리
 - 동시성 제어
 
+현재 재고 차감은 단일 트랜잭션 안에서 처리하지만, 동시 주문 경쟁 상황에서의 재고 정합성은 아직 별도로 다루지 않았다.
+
 ## 기술 스택
 
 - Java 21
@@ -208,7 +210,30 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 - 통합 테스트
   `OrderCreateServiceTest`, `OrderdemoApplicationTests`는 스프링 컨텍스트와 DB 연결이 필요한 테스트다.
 
-현재 `application.yml`이 MySQL 호스트를 `db`로 사용하므로, Docker Compose 환경이 아니면 `@SpringBootTest` 계열 테스트는 실패할 수 있다.
+기본 datasource 값은 Docker Compose 기준으로 `db` 호스트를 사용한다.
+다른 환경에서는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 환경변수로 override할 수 있다.
+
+테스트 실행 방법은 아래와 같다.
+
+### Docker Compose 환경에서 실행
+
+```bash
+docker compose up -d db
+./gradlew test
+```
+
+이 경우 애플리케이션 기본값인 `db` 호스트를 그대로 사용한다.
+
+### 다른 환경에서 실행
+
+MySQL이 다른 호스트에 떠 있다면 환경변수를 지정한 뒤 실행하면 된다.
+
+```bash
+DB_URL=jdbc:mysql://localhost:3306/orderdemo?serverTimezone=Asia/Seoul\&characterEncoding=UTF-8 \
+DB_USERNAME=app \
+DB_PASSWORD=app1234 \
+./gradlew test
+```
 
 ## 다음 단계 계획
 
