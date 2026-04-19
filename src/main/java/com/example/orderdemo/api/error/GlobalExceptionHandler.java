@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(status)
-                .body(ErrorResponse.of(errorCode.getCode(), errorCode.getMessage()));
+                .body(ErrorResponse.of(errorCode.getCode(), e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -53,6 +53,6 @@ public class GlobalExceptionHandler {
         HttpStatus status = ErrorCodeHttpStatusMapper.map(errorCode);
         return ResponseEntity
                 .status(status)
-                .body(ErrorResponse.of(errorCode.getCode(), e.getMessage()));
+                .body(ErrorResponse.of(errorCode.getCode(), errorCode.getMessage()));
     }
 }
