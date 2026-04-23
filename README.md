@@ -1,5 +1,7 @@
 # orderdemo
 
+[![CI](https://github.com/gayeonkim91/orderdemo/actions/workflows/ci.yml/badge.svg)](https://github.com/gayeonkim91/orderdemo/actions/workflows/ci.yml)
+
 ## 프로젝트 소개
 
 `orderdemo`는 Spring Boot로 작성한 주문 데모 프로젝트다.
@@ -35,10 +37,13 @@
 - Spring Web
 - Spring Data JPA
 - Spring Validation
+- Flyway
 - MySQL
 - Gradle
 - JUnit 5
 - Docker Compose
+- Testcontainers
+- GitHub Actions
 - `ulid-creator`
 
 ## 패키지 구조
@@ -62,7 +67,7 @@ src/main/java/com/example/orderdemo
 패키지별 역할은 아래와 같다.
 
 - `api/order`
-  [OrderController.java](src/main/java/com/example/orderdemo/api/order/OrderController.java) 에서 `POST /api/orders`, `GET /api/orders/{orderId}`를 처리한다.
+  [OrderController.java](src/main/java/com/example/orderdemo/api/order/OrderController.java) 에서 `POST /api/orders`, `GET /api/orders/{orderNumber}`를 처리한다.
   요청 DTO는 `CreateOrderRequest`, `CreateOrderItemRequest`, 응답 DTO는 `OrderCreateResponse`, `OrderDetailResponse`, `OrderItemResponse`로 분리했다.
 - `api/error`
   [GlobalExceptionHandler.java](src/main/java/com/example/orderdemo/api/error/GlobalExceptionHandler.java) 가 `BusinessException`, validation 예외, 기타 예외를 API 응답으로 변환한다.
@@ -152,7 +157,7 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 
 ### 주문 조회
 
-`GET /api/orders/{orderId}`
+`GET /api/orders/{orderNumber}`
 
 성공 응답 예시:
 
@@ -186,7 +191,7 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 ```json
 {
   "code": "ORDER_NOT_FOUND",
-  "message": "주문을 찾을 수 없습니다. orderId = 999"
+  "message": "주문을 찾을 수 없습니다. orderNumber = ORDER-UNKNOWN"
 }
 ```
 
@@ -211,6 +216,7 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
   `OrderCreateServiceTest`, `OrderdemoApplicationTests`는 스프링 컨텍스트와 DB 연결이 필요한 테스트다.
 
 애플리케이션 기본 datasource 값은 Docker Compose 기준으로 `db` 호스트를 사용한다.
+Flyway가 테스트 DB 스키마를 적용하고, 통합 테스트는 Testcontainers로 MySQL 컨테이너를 띄워 실행한다.
 
 ### 테스트 실행
 
@@ -220,6 +226,11 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 
 Docker daemon이 실행 중이면 통합 테스트가 MySQL 컨테이너를 자동으로 띄운다.
 별도로 `docker compose up -d db`를 먼저 실행할 필요는 없다.
+
+## CI
+
+GitHub Actions로 CI를 구성했다.
+push와 pull request에서 `./gradlew test`를 실행하며, 이 과정에서 Flyway와 Testcontainers 기반 통합 테스트도 함께 검증한다.
 
 ## 다음 단계 계획
 
