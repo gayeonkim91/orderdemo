@@ -10,6 +10,7 @@ import com.example.orderdemo.domain.order.Order;
 import com.example.orderdemo.domain.product.Product;
 import com.example.orderdemo.repository.OrderRepository;
 import com.example.orderdemo.repository.ProductRepository;
+import com.example.orderdemo.support.MySqlTestContainerSupport;
 import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-class OrderCreateServiceTest {
+class OrderCreateServiceTest extends MySqlTestContainerSupport {
     @Autowired
     private OrderCreateService orderCreateService;
 
