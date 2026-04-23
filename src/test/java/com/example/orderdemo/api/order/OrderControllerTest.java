@@ -22,8 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -192,7 +191,7 @@ class OrderControllerTest {
                         new OrderItemDetailResult(12L, "상품2", 500L, 4, 2000L)
                 )
         );
-        given(orderQueryService.getOrder(anyLong())).willReturn(result);
+        given(orderQueryService.getOrder(anyString())).willReturn(result);
 
         // when, then
         mockMvc.perform(get("/api/orders/1"))
@@ -217,15 +216,15 @@ class OrderControllerTest {
     @Test
     void getOrder_주문없음() throws Exception {
         // given
-        Long orderId = 1L;
-        given(orderQueryService.getOrder(anyLong())).willThrow(new OrderNotFoundException(orderId));
+        String orderNumber = "ORD-12345";
+        given(orderQueryService.getOrder(anyString())).willThrow(new OrderNotFoundException(orderNumber));
 
         // when, then
         mockMvc.perform(get("/api/orders/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("ORDER_NOT_FOUND"))
-                .andExpect(jsonPath("$.message").value("주문을 찾을 수 없습니다. orderId = " + orderId))
+                .andExpect(jsonPath("$.message").value("주문을 찾을 수 없습니다. orderNumber = " + orderNumber))
         ;
     }
 }

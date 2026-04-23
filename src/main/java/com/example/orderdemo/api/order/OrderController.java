@@ -30,9 +30,9 @@ public class OrderController {
                 .body(OrderCreateResponse.from(result));
     }
 
-    @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDetailResponse> getOrder(@PathVariable Long orderId) {
-        OrderDetailResult result = orderQueryService.getOrder(orderId);
+    @GetMapping("/{orderNumber}")
+    public ResponseEntity<OrderDetailResponse> getOrder(@PathVariable String orderNumber) {
+        OrderDetailResult result = orderQueryService.getOrder(orderNumber);
         return ResponseEntity.ok(OrderDetailResponse.from(result));
     }
 }
