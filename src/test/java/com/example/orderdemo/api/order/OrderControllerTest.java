@@ -9,6 +9,8 @@ import com.example.orderdemo.application.order.result.OrderCreateResult;
 import com.example.orderdemo.application.order.result.OrderDetailResult;
 import com.example.orderdemo.application.order.result.OrderItemDetailResult;
 import com.example.orderdemo.common.exception.order.OrderNotFoundException;
+import com.example.orderdemo.common.exception.product.OutOfStockException;
+import com.example.orderdemo.common.exception.product.ProductNotFoundException;
 import com.example.orderdemo.domain.order.OrderStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -20,8 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -143,6 +144,44 @@ class OrderControllerTest {
     }
 
     @Test
+    void createOrder_orderItem_존재하지않는상품() throws Exception {
+        // given
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+                List.of(
+                        new CreateOrderItemRequest(1L, 1)
+                )
+        );
+        given(orderCreateService.create(any(CreateOrderCommand.class))).willThrow(new ProductNotFoundException(List.of(1L)));
+
+        //when, then
+        mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createOrderRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("PRODUCT_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("상품을 찾을 수 없습니다. productIds = " + List.of(1L).toString()));
+    }
+
+    @Test
+    void createOrder_orderItem_재고부족() throws Exception {
+        // given
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+                List.of(
+                        new CreateOrderItemRequest(1L, 2)
+                )
+        );
+        given(orderCreateService.create(any(CreateOrderCommand.class))).willThrow(new OutOfStockException(1L));
+
+        //when, then
+        mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createOrderRequest)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("OUT_OF_STOCK"))
+                .andExpect(jsonPath("$.message").value("재고가 부족합니다. productId = " + 1L));
+    }
+
+    @Test
     void getOrder_성공() throws Exception {
         // given
         OrderDetailResult result = new OrderDetailResult(
@@ -152,7 +191,7 @@ class OrderControllerTest {
                         new OrderItemDetailResult(12L, "상품2", 500L, 4, 2000L)
                 )
         );
-        given(orderQueryService.getOrder(anyLong())).willReturn(result);
+        given(orderQueryService.getOrder(anyString())).willReturn(result);
 
         // when, then
         mockMvc.perform(get("/api/orders/1"))
@@ -177,15 +216,15 @@ class OrderControllerTest {
     @Test
     void getOrder_주문없음() throws Exception {
         // given
-        Long orderId = 1L;
-        given(orderQueryService.getOrder(anyLong())).willThrow(new OrderNotFoundException(orderId));
+        String orderNumber = "ORD-12345";
+        given(orderQueryService.getOrder(anyString())).willThrow(new OrderNotFoundException(orderNumber));
 
         // when, then
         mockMvc.perform(get("/api/orders/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("ORDER_NOT_FOUND"))
-                .andExpect(jsonPath("$.message").value("주문을 찾을 수 없습니다. orderId = " + orderId))
+                .andExpect(jsonPath("$.message").value("주문을 찾을 수 없습니다. orderNumber = " + orderNumber))
         ;
     }
 }

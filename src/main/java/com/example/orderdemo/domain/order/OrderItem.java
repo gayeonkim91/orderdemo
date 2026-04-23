@@ -17,17 +17,27 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
+
+    @Column(nullable = false)
     private Long productId;
+
+    @Column(nullable = false)
     private String productName;
+
+    @Column(nullable = false)
     private long orderUnitPrice;
+
+    @Column(nullable = false)
     private int quantity;
 
     @CreatedDate
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     public static OrderItem of(Long productId, String productName, long orderUnitPrice, int quantity) {

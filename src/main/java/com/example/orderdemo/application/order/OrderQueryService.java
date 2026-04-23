@@ -15,8 +15,8 @@ public class OrderQueryService {
         this.orderRepository = orderRepository;
     }
 
-    public OrderDetailResult getOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+    public OrderDetailResult getOrder(String orderNumber) {
+        Order order = orderRepository.findByOrderNumber(orderNumber).orElseThrow(() -> new OrderNotFoundException(orderNumber));
         return OrderDetailResult.from(order);
     }
 }
