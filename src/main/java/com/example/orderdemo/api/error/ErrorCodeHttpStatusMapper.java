@@ -10,7 +10,7 @@ public final class ErrorCodeHttpStatusMapper {
         return switch(errorCode) {
             case INVALID_ORDER, INVALID_INPUT -> HttpStatus.BAD_REQUEST;
             case ORDER_NOT_FOUND, PRODUCT_NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case OUT_OF_STOCK -> HttpStatus.CONFLICT;
+            case OUT_OF_STOCK, CONCURRENT_ORDER -> HttpStatus.CONFLICT;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
     }

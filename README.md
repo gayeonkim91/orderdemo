@@ -17,6 +17,7 @@
 - 중복 상품 ID 주문 방지
 - 존재하지 않는 상품 검증
 - 재고 부족 검증과 재고 차감
+- 재고 차감 동시성 제어
 - 주문 총액 계산
 - 주문 시점 상품명/주문 단가 저장
 - 공통 예외 응답 처리
@@ -26,9 +27,9 @@
 - 상품 등록/조회 API
 - 주문 취소/상태 변경
 - 결제/배송 처리
-- 동시성 제어
 
-재고 차감은 단일 트랜잭션 안에서 처리하며, 동시 주문 경쟁 상황의 정합성은 아직 별도로 다루지 않았다.
+재고 차감은 단일 트랜잭션 안에서 처리하며, 주문 생성 시 상품 row에 비관적 락을 걸어 같은 상품에 대한 동시 주문을 순차적으로 처리한다.
+락 대기 시간이 길어지는 상황을 제한하기 위해 MySQL 세션의 `innodb_lock_wait_timeout`을 3초로 설정했다.
 
 ## 기술 스택
 
@@ -110,11 +111,20 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 주문 엔티티는 DB PK 외에 별도의 `orderNumber`를 가진다.
 외부 식별자와 내부 식별자를 분리해 식별자 정책을 분리했다.
 
-### 7. 과설계 지양
+### 7. 재고 차감 동시성 제어
+주문 생성 시 상품을 조회할 때 `PESSIMISTIC_WRITE` 락을 사용한다.
+같은 상품에 대한 동시 주문은 먼저 락을 획득한 트랜잭션이 재고를 차감하고 커밋한 뒤, 다음 트랜잭션이 최신 재고를 기준으로 재고 부족 여부를 다시 판단한다.
+
+여러 상품을 한 주문에서 함께 처리할 때는 상품 ID를 정렬한 뒤 조회한다.
+락 획득 순서를 고정해 서로 다른 주문이 같은 상품들을 다른 순서로 잠그면서 발생할 수 있는 deadlock 가능성을 낮추기 위한 선택이다.
+
+락 대기 실패는 주문 경합 상황으로 보고 `CONCURRENT_ORDER` 예외 응답으로 변환한다.
+
+### 8. 과설계 지양
 현재 단계에서는 서비스 인터페이스, CQRS 분리, factory/policy/port-adapter 구조 같은 추상화를 도입하지 않았다.
 작은 범위에서 필요한 수준의 구조만 유지하고, 설명 가능성과 테스트 가능성을 우선했다.
 
-### 8. 테스트를 계층별로 분리
+### 9. 테스트를 계층별로 분리
 도메인 규칙은 unit test, 주문 생성 유스케이스는 service integration test, HTTP 요청/응답 계약은 controller test(MockMvc)로 검증했다.
 테스트 목적이 섞이지 않도록 책임을 나눴다.
 
@@ -152,6 +162,15 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 {
   "code": "OUT_OF_STOCK",
   "message": "재고가 부족합니다. productId = 2"
+}
+```
+
+동시 주문 경합으로 락 대기 시간이 초과되면 아래와 같이 응답한다.
+
+```json
+{
+  "code": "CONCURRENT_ORDER",
+  "message": "주문이 동시에 발생했습니다."
 }
 ```
 
@@ -204,6 +223,7 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 - [OrderItemTest.java](src/test/java/com/example/orderdemo/domain/order/OrderItemTest.java)
 - [OrderControllerTest.java](src/test/java/com/example/orderdemo/api/order/OrderControllerTest.java)
 - [OrderCreateServiceTest.java](src/test/java/com/example/orderdemo/application/order/OrderCreateServiceTest.java)
+- [OrderCreateServiceConcurrencyTest.java](src/test/java/com/example/orderdemo/application/order/OrderCreateServiceConcurrencyTest.java)
 - [OrderdemoApplicationTests.java](src/test/java/com/example/orderdemo/OrderdemoApplicationTests.java)
 
 역할은 아래와 같다.
@@ -213,7 +233,8 @@ HTTP 요청/응답 모델과 서비스 입력/출력 모델을 분리했다.
 - API 테스트
   `OrderControllerTest`에서 요청 검증과 응답 형식을 확인한다.
 - 통합 테스트
-  `OrderCreateServiceTest`, `OrderdemoApplicationTests`는 스프링 컨텍스트와 DB 연결이 필요한 테스트다.
+  `OrderCreateServiceTest`, `OrderCreateServiceConcurrencyTest`, `OrderdemoApplicationTests`는 스프링 컨텍스트와 DB 연결이 필요한 테스트다.
+  `OrderCreateServiceConcurrencyTest`는 같은 상품에 대해 동시 주문이 들어와도 재고보다 많은 주문이 성공하지 않는지 검증한다.
 
 애플리케이션 기본 datasource 값은 Docker Compose 기준으로 `db` 호스트를 사용한다.
 Flyway가 테스트 DB 스키마를 적용하고, 통합 테스트는 Testcontainers로 MySQL 컨테이너를 띄워 실행한다.
