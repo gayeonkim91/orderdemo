@@ -3,6 +3,7 @@ package com.example.orderdemo.application.order;
 import com.example.orderdemo.application.order.command.CreateOrderCommand;
 import com.example.orderdemo.application.order.command.CreateOrderLineCommand;
 import com.example.orderdemo.application.order.result.OrderCreateResult;
+import com.example.orderdemo.common.exception.order.ConcurrentOrderException;
 import com.example.orderdemo.common.exception.order.InvalidOrderException;
 import com.example.orderdemo.common.exception.product.ProductNotFoundException;
 import com.example.orderdemo.domain.order.Order;
@@ -10,6 +11,7 @@ import com.example.orderdemo.domain.order.OrderItem;
 import com.example.orderdemo.domain.product.Product;
 import com.example.orderdemo.repository.OrderRepository;
 import com.example.orderdemo.repository.ProductRepository;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,20 +36,22 @@ public class OrderCreateService {
                 .toList();
 
         validateNoDuplicateProductIds(productIds);
-        Map<Long, Product> productMap = getProductMap(productIds);
+        try {
+            Map<Long, Product> productMap = getProductMap(productIds);
+            List<OrderItem> orderItems = new ArrayList<>();
+            for (CreateOrderLineCommand item : command.items()) {
+                Product product = productMap.get(item.productId());
+                product.decreaseQuantity(item.quantity());
+                OrderItem orderItem = OrderItem.of(item.productId(), product.getName(), product.getPrice(), item.quantity());
+                orderItems.add(orderItem);
+            }
 
-
-        List<OrderItem> orderItems = new ArrayList<>();
-        for (CreateOrderLineCommand item : command.items()) {
-            Product product = productMap.get(item.productId());
-            product.decreaseQuantity(item.quantity());
-            OrderItem orderItem = OrderItem.of(item.productId(), product.getName(), product.getPrice(), item.quantity());
-            orderItems.add(orderItem);
+            String orderNumber = orderNumberGenerator.generate();
+            Order createdOrder = orderRepository.save(Order.create(orderNumber, orderItems));
+            return OrderCreateResult.from(createdOrder);
+        } catch (PessimisticLockingFailureException e) {
+            throw new ConcurrentOrderException();
         }
-
-        String orderNumber = orderNumberGenerator.generate();
-        Order createdOrder = orderRepository.save(Order.create(orderNumber, orderItems));
-        return OrderCreateResult.from(createdOrder);
     }
 
     private void validateNoDuplicateProductIds(List<Long> productIds) {
@@ -57,8 +61,9 @@ public class OrderCreateService {
     }
 
     private Map<Long, Product> getProductMap(List<Long> productIds) {
-        List<Product> foundProducts = productRepository.findAllById(productIds);
-        validateProductsFound(productIds, foundProducts);
+        List<Long> sortedProductIds = productIds.stream().distinct().sorted().toList();
+        List<Product> foundProducts = productRepository.findByIdInOrderByIdAsc(sortedProductIds);
+        validateProductsFound(sortedProductIds, foundProducts);
         return foundProducts.stream().collect(Collectors.toMap(Product::getId, p -> p));
     }
 
